@@ -1,0 +1,94 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankdb
+    username: bankuser
+    password: bankpass
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    show-sql: false
+    open-in-view: false
+  
+  liquibase:
+    change-log: classpath:db/migration/master.yaml
+    enabled: true
+  
+  cache:
+    type: simple
+    cache-names: userCache, cardCache, transactionCache
+  
+  task:
+    execution:
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 25
+  
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+      base-path: /management
+  endpoint:
+    health:
+      show-details: when_authorized
+      show-components: when_authorized
+    metrics:
+      enabled: true
+
+app:
+  jwt:
+    secret: "c2VjdXJlU2VjcmV0S2V5Rm9ySldUVG9rZW5HZW5lcmF0aW9uMjAyNEJhbmtBcHBTZWN1cmU="
+    expiration-ms: 86400000  # 24 hours
+  
+  encryption:
+    secret: "myEncryptionSecretKey1234567890123456"  # 32 chars for AES-256
+  
+  card:
+    mask-pattern: "**** **** **** %s"
+    max-transfer-amount: 1000000
+    min-transfer-amount: 0.01
+  
+  cors:
+    allowed-origins: "*"
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: "*"
+    max-age: 3600
+
+logging:
+  level:
+    com.bank.cardmanager: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/bank-card-manager.log

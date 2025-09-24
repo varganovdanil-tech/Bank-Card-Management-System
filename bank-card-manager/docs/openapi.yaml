@@ -1,0 +1,92 @@
+openapi: 3.0.0
+info:
+  title: Bank Card Manager API
+  description: Spring Boot application for managing bank cards
+  version: 1.0.0
+  contact:
+    name: Bank API Support
+    email: support@bank.com
+
+servers:
+  - url: http://localhost:8080/api
+    description: Development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Card:
+      type: object
+      properties:
+        id:
+          type: integer
+        maskedCardNumber:
+          type: string
+        cardHolder:
+          type: string
+        expiryDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, EXPIRED]
+        balance:
+          type: number
+          format: decimal
+
+    TransferRequest:
+      type: object
+      required:
+        - fromCardId
+        - toCardId
+        - amount
+      properties:
+        fromCardId:
+          type: integer
+        toCardId:
+          type: integer
+        amount:
+          type: number
+          minimum: 0.01
+        description:
+          type: string
+
+paths:
+  /auth/signin:
+    post:
+      summary: Authenticate user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Successful authentication
+        '401':
+          description: Unauthorized
+
+  /cards/my:
+    get:
+      summary: Get user's cards
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of user's cards
